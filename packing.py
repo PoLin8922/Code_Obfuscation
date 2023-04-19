@@ -4,19 +4,17 @@ import fnmatch # to match a pattern
 import subprocess
 
 # input
-repo_path = "~/amcl_ws/src/rdd21_deliverybot"
-deployment_scripts_path = repo_path + '/deployment'
+file_path = os.path.abspath(__file__)
+repo_path = file_path.replace("/Package_Packing/packing.py", "")
+deployment_scripts_path = file_path.replace("/packing.py", "")
 # output
 rosdebian_dir = "~/rosdebian_files"
 
+'''
 # White list
 #------------------------------------------------------#
-# pkg_white_list = ['agv','docking_navigation_2']
-# pkg_white_list = ['agv','docking_navigation_2','multirobot_nav']
 # pkg_white_list = ['agv','docking_navigation_2','multirobot_nav','escape_recovery_2']
 pkg_white_list = None
-# pkg_white_list = ['map_pub']
-# pkg_white_list = []
 
 # Black list
 #------------------------------------------------------#
@@ -24,11 +22,12 @@ pkg_black_list = None
 
 # Delete-anyway list
 #------------------------------------------------------#
-pkg_delete_list = [ 'map_server', 'simple_layers','apriltags_ros','apriltags',
-                    'tag_mapping','docking_navigation','amcl_aux_localization','msg_recorder',
-                    'detection_viz','drivenet','camera_utils','object_costmap_generator','drivenet_lib'
-                    ]
-
+# pkg_delete_list = [ 'map_server', 'simple_layers','apriltags_ros','apriltags',
+#                     'tag_mapping','docking_navigation','amcl_aux_localization','msg_recorder',
+#                     'detection_viz','drivenet','camera_utils','object_costmap_generator','drivenet_lib'
+#                     ]
+pkg_delete_list = None
+'''
 
 # os.walk is the answer, this will find the first match:
 def find(name, path):
@@ -86,25 +85,21 @@ def find_python_files_in_a_packag(pkg_path):
 
 
 def minify_python_script(py_file_path):
-    _tmp_file_name = "tmp.pyfile"
-    _cmd = "pyminifier --nominify --gzip %s > %s" % (py_file_path, _tmp_file_name) # a *.py file
+    _tmp_file_name = "tmp.py"
+    _cmd = "./pyobfuscate %s > %s" % (py_file_path, _tmp_file_name)
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + "/pyobfuscate"))
+    _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + '/' + _tmp_file_name))
+    _cmd = "pyminifier --nominify --gzip %s > %s" % (py_file_path, _tmp_file_name)
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
-    _cmd = "mv %s %s" % (_tmp_file_name, py_file_path)
+    _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
+    _cmd = "python -m py_compile %s" % (py_file_path) 
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
+    _cmd = "mv %s %s" % (py_file_path + 'c', py_file_path) 
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
-    # Change mode
     _cmd = "chmod u+x %s" % py_file_path
     subprocess.call(_cmd, shell=True)
-
-
-# python_pkg_path_list = find_python_packages(repo_path)
-#
-# for _path in python_pkg_path_list:
-#     _pkg_name = os.path.basename(_path)
-#     if _pkg_name in pkg_white_list:
-#         _py_list = find_python_files_in_a_packag(_path)
-#         for _i, _py_path in enumerate(_py_list):
-#             print("%d:\t%s" % (_i, _py_path))
-#             minify_python_script(_py_path)
 
 
 #---------------------------------------------------------------------#
@@ -137,7 +132,6 @@ for _i, _path in enumerate(python_pkg_path_list):
 print("-"*100)
 
 
-
 def rm_directory(_path):
     """
     """
@@ -152,7 +146,7 @@ def rm_directory(_path):
 
 for _i, _path in enumerate(pkg_path_list):
     _pkg_name = os.path.basename(_path)
-
+    '''
     # Filtering
     #----------------------------------------------------------------#
     _skip_build = False
@@ -175,6 +169,7 @@ for _i, _path in enumerate(pkg_path_list):
     print("\n")
     print("-"*30)
     print("%d:\t%s" % (_i, _pkg_name))
+    '''
 
     # Processing python files
     if _path in python_pkg_path_list:
@@ -183,7 +178,7 @@ for _i, _path in enumerate(pkg_path_list):
         for _i, _py_path in enumerate(_py_list):
             print("%d:\t%s" % (_i, _py_path))
             minify_python_script(_py_path)
-
+'''
     # pack debian
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
     # make
@@ -203,3 +198,4 @@ _cmd = "cp %s %s" % (deployment_scripts_path+'/install.py', rosdebian_dir+'/')
 subprocess.call(_cmd, shell=True)
 _cmd = "cp %s %s" % (deployment_scripts_path+'/uninstall.py', rosdebian_dir+'/')
 subprocess.call(_cmd, shell=True)
+'''
