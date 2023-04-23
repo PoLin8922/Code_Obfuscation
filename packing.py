@@ -94,10 +94,10 @@ def minify_python_script(py_file_path):
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
     _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
-    _cmd = "python -m py_compile %s" % (py_file_path) 
-    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
-    _cmd = "mv %s %s" % (py_file_path + 'c', py_file_path) 
-    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
+    # _cmd = "python2 -m py_compile %s" % (py_file_path) 
+    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
+    # _cmd = "mv %s %s" % (py_file_path + 'c', py_file_path) 
+    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
     _cmd = "chmod u+x %s" % py_file_path
     subprocess.call(_cmd, shell=True)
 
@@ -123,6 +123,7 @@ pkg_path_list = find_packages(repo_path)
 for _i, _path in enumerate(pkg_path_list):
     print("%d:\t%s" % (_i, _path))
 
+
 print("-"*100)
 print("\nPackages that include python scripts:")
 python_pkg_path_list = find_python_packages(repo_path)
@@ -133,8 +134,6 @@ print("-"*100)
 
 
 def rm_directory(_path):
-    """
-    """
     # Remove the package, entirely
     _cmd = "rm -rf %s" % _path
     subprocess.call(_cmd, shell=True)
@@ -146,6 +145,7 @@ def rm_directory(_path):
 
 for _i, _path in enumerate(pkg_path_list):
     _pkg_name = os.path.basename(_path)
+    
     '''
     # Filtering
     #----------------------------------------------------------------#
@@ -178,7 +178,7 @@ for _i, _path in enumerate(pkg_path_list):
         for _i, _py_path in enumerate(_py_list):
             print("%d:\t%s" % (_i, _py_path))
             minify_python_script(_py_path)
-'''
+
     # pack debian
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
     # make
@@ -198,4 +198,20 @@ _cmd = "cp %s %s" % (deployment_scripts_path+'/install.py', rosdebian_dir+'/')
 subprocess.call(_cmd, shell=True)
 _cmd = "cp %s %s" % (deployment_scripts_path+'/uninstall.py', rosdebian_dir+'/')
 subprocess.call(_cmd, shell=True)
-'''
+
+# check
+pkg_path_list = find_packages(repo_path)
+pkg_success_list = []
+pkg_fail_list = []
+for _i, _path in enumerate(pkg_path_list):
+    _pkg_name = os.path.basename(_path)
+    pkg_fail_list.append(_pkg_name)
+    if(_path.find("debian") != -1):
+        pkg_fail_list.remove(_pkg_name)
+        pkg_fail_list.remove(_pkg_name)
+        pkg_success_list.append(_pkg_name) 
+
+print("\n************** Success package list **************\n")
+print(pkg_success_list)
+print("\n************** Fial package list **************\n")
+print(pkg_fail_list)

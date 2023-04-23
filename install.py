@@ -46,11 +46,6 @@ def find_deb_files(path):
     return path_list
 
 
-
-
-
-
-
 # The directory for *.deb
 rosdebian_dir = os.path.expanduser(rosdebian_dir)
 rosdebian_dir = os.path.expandvars(rosdebian_dir)
@@ -79,12 +74,11 @@ for _i, _path in enumerate(deb_pkg_path_list):
     _idx_version = _file_name.find('_')
     if _idx_version > 0:
         _module_name = _module_name[:_idx_version]
-    print("%d:\t%s" % (_i, _module_name))
+    print("%d:\t%s" % (_i, _idx_dot))
     # Record the module name that are to be installed
     with open(record_installation_file_path, "a") as _fh:
         _fh.write( _module_name + '\n' )
     # Install the dpkg module
-    # _cmd = "dpkg -i %s" % _file_name
-    # subprocess.call(_cmd, shell=True, cwd=rosdebian_dir)
     _cmd = 'echo "%s"|sudo -S dpkg -i %s' % (pw, _path)
     subprocess.call(_cmd, shell=True)
+    # print("pw: %s:\t_path: %s" % (pw, _path))
