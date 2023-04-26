@@ -177,7 +177,7 @@ for _i, _path in enumerate(pkg_path_list):
         _py_list = find_python_files_in_a_packag(_path)
         for _i, _py_path in enumerate(_py_list):
             print("%d:\t%s" % (_i, _py_path))
-            minify_python_script(_py_path)
+            # minify_python_script(_py_path)
 
     # pack debian
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
@@ -199,7 +199,7 @@ subprocess.call(_cmd, shell=True)
 _cmd = "cp %s %s" % (deployment_scripts_path+'/uninstall.py', rosdebian_dir+'/')
 subprocess.call(_cmd, shell=True)
 
-# check
+# checking
 pkg_path_list = find_packages(repo_path)
 pkg_success_list = []
 pkg_fail_list = []
@@ -213,5 +213,5 @@ for _i, _path in enumerate(pkg_path_list):
 
 print("\n************** Success package list **************\n")
 print(pkg_success_list)
-print("\n************** Fial package list **************\n")
+print("\n************** Fail package list **************\n")
 print(pkg_fail_list)
