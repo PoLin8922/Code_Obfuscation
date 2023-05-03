@@ -1,12 +1,13 @@
 #!/usr/bin/env python2
-import os # os.walk
-import fnmatch # to match a pattern
+import os
+import fnmatch 
 import subprocess
 
 # input
 file_path = os.path.abspath(__file__)
 repo_path = file_path.replace("/Package_Packing/packing.py", "")
 deployment_scripts_path = file_path.replace("/packing.py", "")
+
 # output
 rosdebian_dir = "~/rosdebian_files"
 
@@ -76,13 +77,10 @@ def find_python_packages(path):
             _pkg_path_list.append(_dir_path)
     return _pkg_path_list
 
-
 def find_python_files_in_a_packag(pkg_path):
     # print(_dir_path)
     _py_list = find("*.py", pkg_path)
     return _py_list
-
-
 
 def minify_python_script(py_file_path):
     _tmp_file_name = "tmp.py"
@@ -100,6 +98,13 @@ def minify_python_script(py_file_path):
     # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
     _cmd = "chmod u+x %s" % py_file_path
     subprocess.call(_cmd, shell=True)
+
+def rm_directory(_path):
+    # Remove the package, entirely
+    _cmd = "rm -rf %s" % _path
+    subprocess.call(_cmd, shell=True)
+    _pkg_name = os.path.basename(_path)
+    print("---[%s] removed" % _pkg_name)
 
 
 #---------------------------------------------------------------------#
@@ -123,7 +128,6 @@ pkg_path_list = find_packages(repo_path)
 for _i, _path in enumerate(pkg_path_list):
     print("%d:\t%s" % (_i, _path))
 
-
 print("-"*100)
 print("\nPackages that include python scripts:")
 python_pkg_path_list = find_python_packages(repo_path)
@@ -133,16 +137,7 @@ for _i, _path in enumerate(python_pkg_path_list):
 print("-"*100)
 
 
-def rm_directory(_path):
-    # Remove the package, entirely
-    _cmd = "rm -rf %s" % _path
-    subprocess.call(_cmd, shell=True)
-    _pkg_name = os.path.basename(_path)
-    print("---[%s] removed" % _pkg_name)
-
-
 # Generating rosdebians
-
 for _i, _path in enumerate(pkg_path_list):
     _pkg_name = os.path.basename(_path)
     
@@ -177,7 +172,7 @@ for _i, _path in enumerate(pkg_path_list):
         _py_list = find_python_files_in_a_packag(_path)
         for _i, _py_path in enumerate(_py_list):
             print("%d:\t%s" % (_i, _py_path))
-            # minify_python_script(_py_path)
+            minify_python_script(_py_path)
 
     # pack debian
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
