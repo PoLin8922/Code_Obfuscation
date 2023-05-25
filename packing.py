@@ -11,16 +11,12 @@ deployment_scripts_path = file_path.replace("/packing.py", "")
 # output
 rosdebian_dir = "~/rosdebian_files"
 
+
+# Ignore list
+#------------------------------------------------------#
+pkg_ignore_list = []
+
 '''
-# White list
-#------------------------------------------------------#
-# pkg_white_list = ['agv','docking_navigation_2','multirobot_nav','escape_recovery_2']
-pkg_white_list = None
-
-# Black list
-#------------------------------------------------------#
-pkg_black_list = None
-
 # Delete-anyway list
 #------------------------------------------------------#
 # pkg_delete_list = [ 'map_server', 'simple_layers','apriltags_ros','apriltags',
@@ -140,31 +136,23 @@ print("-"*100)
 # Generating rosdebians
 for _i, _path in enumerate(pkg_path_list):
     _pkg_name = os.path.basename(_path)
-    
-    '''
+
     # Filtering
     #----------------------------------------------------------------#
-    _skip_build = False
-    # Whitelist
-    if (pkg_white_list is not None) and not (_pkg_name in pkg_white_list):
-        _skip_build = True
-    # Blacklist
-    if (pkg_black_list is not None) and (_pkg_name in pkg_black_list):
-        _skip_build = True
+    # Ignoredlist
+    if (pkg_ignore_list is not None) and  (_pkg_name in pkg_ignore_list):
+        continue
+    '''
     # Delete anyway
     if (pkg_delete_list is not None) and (_pkg_name in pkg_delete_list):
         # delete anyway
         # rm_directory(_path)
         _skip_build = True
-    #----------------------------------------------------------------#
-    # _skip_build
-    if _skip_build:
-        continue
+    '''
     #----------------------------------------------------------------#
     print("\n")
     print("-"*30)
     print("%d:\t%s" % (_i, _pkg_name))
-    '''
 
     # Processing python files
     if _path in python_pkg_path_list:
@@ -174,7 +162,7 @@ for _i, _path in enumerate(pkg_path_list):
             print("%d:\t%s" % (_i, _py_path))
             minify_python_script(_py_path)
 
-    # pack debian
+    #pack debian
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
     # make
     subprocess.call("fakeroot debian/rules binary", shell=True, cwd=_path)
@@ -203,7 +191,8 @@ for _i, _path in enumerate(pkg_path_list):
     pkg_fail_list.append(_pkg_name)
     if(_path.find("debian") != -1):
         pkg_fail_list.remove(_pkg_name)
-        pkg_fail_list.remove(_pkg_name)
+        if _pkg_name in pkg_fail_list:
+            pkg_fail_list.remove(_pkg_name)
         pkg_success_list.append(_pkg_name) 
 
 print("\n************** Success package list **************\n")
