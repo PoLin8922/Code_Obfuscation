@@ -162,7 +162,7 @@ for _i, _path in enumerate(pkg_path_list):
             print("%d:\t%s" % (_i, _py_path))
             minify_python_script(_py_path)
 
-    #pack debian
+    # pack debian
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
     # make
     subprocess.call("fakeroot debian/rules binary", shell=True, cwd=_path)
