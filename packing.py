@@ -16,15 +16,11 @@ rosdebian_dir = "~/rosdebian_files"
 #------------------------------------------------------#
 pkg_ignore_list = []
 
-'''
+
 # Delete-anyway list
 #------------------------------------------------------#
-# pkg_delete_list = [ 'map_server', 'simple_layers','apriltags_ros','apriltags',
-#                     'tag_mapping','docking_navigation','amcl_aux_localization','msg_recorder',
-#                     'detection_viz','drivenet','camera_utils','object_costmap_generator','drivenet_lib'
-#                     ]
-pkg_delete_list = None
-'''
+pkg_delete_list = []
+
 
 # os.walk is the answer, this will find the first match:
 def find(name, path):
@@ -80,18 +76,29 @@ def find_python_files_in_a_packag(pkg_path):
 
 def minify_python_script(py_file_path):
     _tmp_file_name = "tmp.py"
+    # copy original file
+    if not os.path.isdir(os.path.dirname(_py_path) + '/py_copy/'):
+        _cmd = "mkdir py_copy"
+        subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
+    _cmd = "cp %s %s" % (py_file_path, os.path.dirname(_py_path) + '/py_copy/')
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
+    # obfuscate
     _cmd = "./pyobfuscate %s > %s" % (py_file_path, _tmp_file_name)
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + "/pyobfuscate"))
     _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + '/' + _tmp_file_name))
+    # compress
     _cmd = "pyminifier --nominify --gzip %s > %s" % (py_file_path, _tmp_file_name)
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
     _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
-    # _cmd = "python2 -m py_compile %s" % (py_file_path) 
-    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
-    # _cmd = "mv %s %s" % (py_file_path + 'c', py_file_path) 
-    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
+    # remove pyminifier tags
+    with open(py_file_path, "r") as file:
+        lines = file.readlines()
+    lines = lines[:-2]
+    with open(py_file_path, "w") as file:
+        file.writelines(lines)
+    # make file executable
     _cmd = "chmod u+x %s" % py_file_path
     subprocess.call(_cmd, shell=True)
 
@@ -120,14 +127,12 @@ except:
 print("-"*100)
 print("\nPackages in repo. [%s]:" % repo_path)
 pkg_path_list = find_packages(repo_path)
-# print(python_pkg_path_list)
 for _i, _path in enumerate(pkg_path_list):
     print("%d:\t%s" % (_i, _path))
 
 print("-"*100)
 print("\nPackages that include python scripts:")
 python_pkg_path_list = find_python_packages(repo_path)
-# print(python_pkg_path_list)
 for _i, _path in enumerate(python_pkg_path_list):
     print("%d:\t%s" % (_i, _path))
 print("-"*100)
@@ -142,14 +147,8 @@ for _i, _path in enumerate(pkg_path_list):
     # Ignoredlist
     if (pkg_ignore_list is not None) and  (_pkg_name in pkg_ignore_list):
         continue
-    '''
-    # Delete anyway
-    if (pkg_delete_list is not None) and (_pkg_name in pkg_delete_list):
-        # delete anyway
-        # rm_directory(_path)
-        _skip_build = True
-    '''
     #----------------------------------------------------------------#
+    
     print("\n")
     print("-"*30)
     print("%d:\t%s" % (_i, _pkg_name))
