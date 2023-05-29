@@ -10,7 +10,8 @@ deployment_scripts_path = file_path.replace("/packing.py", "")
 
 # output
 rosdebian_dir = "~/rosdebian_files"
-
+success_pkg_list = []
+fail_pkg_list = []
 
 # Ignore list
 #------------------------------------------------------#
@@ -78,8 +79,7 @@ def minify_python_script(py_file_path):
     _tmp_file_name = "tmp.py"
     # copy original file
     if not os.path.isdir(os.path.dirname(_py_path) + '/py_copy/'):
-        _cmd = "mkdir py_copy"
-        subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path)) 
+        subprocess.call("mkdir py_copy", shell=True, cwd=os.path.dirname(py_file_path)) 
     _cmd = "cp %s %s" % (py_file_path, os.path.dirname(_py_path) + '/py_copy/')
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
     # obfuscate
@@ -151,7 +151,7 @@ for _i, _path in enumerate(pkg_path_list):
     
     print("\n")
     print("-"*30)
-    print("%d:\t%s" % (_i, _pkg_name))
+    print("%d:\t%s" % (_i+1, _pkg_name))
 
     # Processing python files
     if _path in python_pkg_path_list:
@@ -165,6 +165,16 @@ for _i, _path in enumerate(pkg_path_list):
     subprocess.call("bloom-generate rosdebian", shell=True, cwd=_path)
     # make
     subprocess.call("fakeroot debian/rules binary", shell=True, cwd=_path)
+
+    new_pkg_list = find_packages(_path + '/debian')
+    # check if success or not
+    if(new_pkg_list):
+        success_pkg_list.append(_pkg_name)
+    else:
+        fail_pkg_list.append(_pkg_name)
+    # remove /debian and /.obj
+    subprocess.call("rm -rf debian/", shell=True, cwd=_path)
+    subprocess.call("rm -rf .obj-x86_64-linux-gnu/", shell=True, cwd=_path)
     # collect the *.deb to rosdebian_dir
     _cmd = "mv %s %s" % ("*.deb", rosdebian_dir+'/')
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
@@ -181,20 +191,8 @@ subprocess.call(_cmd, shell=True)
 _cmd = "cp %s %s" % (deployment_scripts_path+'/uninstall.py', rosdebian_dir+'/')
 subprocess.call(_cmd, shell=True)
 
-# checking
-pkg_path_list = find_packages(repo_path)
-pkg_success_list = []
-pkg_fail_list = []
-for _i, _path in enumerate(pkg_path_list):
-    _pkg_name = os.path.basename(_path)
-    pkg_fail_list.append(_pkg_name)
-    if(_path.find("debian") != -1):
-        pkg_fail_list.remove(_pkg_name)
-        if _pkg_name in pkg_fail_list:
-            pkg_fail_list.remove(_pkg_name)
-        pkg_success_list.append(_pkg_name) 
 
 print("\n************** Success package list **************\n")
-print(pkg_success_list)
+print(success_pkg_list)
 print("\n************** Fail package list **************\n")
-print(pkg_fail_list)
+print(fail_pkg_list)
