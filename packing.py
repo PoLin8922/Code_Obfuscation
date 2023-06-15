@@ -176,14 +176,14 @@ for _i, _path in enumerate(pkg_path_list):
     # remove /debian and /.obj
     subprocess.call("rm -rf debian/", shell=True, cwd=_path)
     subprocess.call("rm -rf .obj-x86_64-linux-gnu/", shell=True, cwd=_path)
-    # # collect the *.deb to rosdebian_dir
-    # _cmd = "mv %s %s" % ("*.deb", rosdebian_dir+'/')
-    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
-    # _cmd = "mv %s %s" % ("*.ddeb", rosdebian_dir+'/') # *.ddeb files
-    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
-    # print("---[%s] added to %s" % (_pkg_name, rosdebian_dir+'/'))
-    # # Remove the package, entirely
-    # # rm_directory(_path)
+    # collect the *.deb to rosdebian_dir
+    _cmd = "mv %s %s" % ("*.deb", rosdebian_dir+'/')
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
+    _cmd = "mv %s %s" % ("*.ddeb", rosdebian_dir+'/') # *.ddeb files
+    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
+    print("---[%s] added to %s" % (_pkg_name, rosdebian_dir+'/'))
+    # Remove the package, entirely
+    # rm_directory(_path)
 
 
 # Copy the installation and uninstallation task_scripts
