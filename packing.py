@@ -15,7 +15,7 @@ fail_pkg_list = []
 
 # Ignore list
 #------------------------------------------------------#
-pkg_ignore_list = []
+pkg_ignore_list = ['agv_lidar_grabber', 'realsense2_camera', 'realsense2_description', 'apriltags_ros']
 
 
 # Delete-anyway list
@@ -85,8 +85,9 @@ def minify_python_script(py_file_path):
     # obfuscate
     _cmd = "./pyobfuscate %s > %s" % (py_file_path, _tmp_file_name)
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + "/pyobfuscate"))
-    _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
-    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + '/' + _tmp_file_name))
+    if(os.path.getsize(deployment_scripts_path + '/' + _tmp_file_name) != 0):
+        _cmd = "mv %s %s" % (_tmp_file_name, py_file_path) 
+        subprocess.call(_cmd, shell=True, cwd=os.path.dirname(deployment_scripts_path + '/' + _tmp_file_name))
     # compress
     _cmd = "pyminifier --nominify --gzip %s > %s" % (py_file_path, _tmp_file_name)
     subprocess.call(_cmd, shell=True, cwd=os.path.dirname(py_file_path))
@@ -175,14 +176,14 @@ for _i, _path in enumerate(pkg_path_list):
     # remove /debian and /.obj
     subprocess.call("rm -rf debian/", shell=True, cwd=_path)
     subprocess.call("rm -rf .obj-x86_64-linux-gnu/", shell=True, cwd=_path)
-    # collect the *.deb to rosdebian_dir
-    _cmd = "mv %s %s" % ("*.deb", rosdebian_dir+'/')
-    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
-    _cmd = "mv %s %s" % ("*.ddeb", rosdebian_dir+'/') # *.ddeb files
-    subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
-    print("---[%s] added to %s" % (_pkg_name, rosdebian_dir+'/'))
-    # Remove the package, entirely
-    # rm_directory(_path)
+    # # collect the *.deb to rosdebian_dir
+    # _cmd = "mv %s %s" % ("*.deb", rosdebian_dir+'/')
+    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
+    # _cmd = "mv %s %s" % ("*.ddeb", rosdebian_dir+'/') # *.ddeb files
+    # subprocess.call(_cmd, shell=True, cwd=os.path.dirname(_path))
+    # print("---[%s] added to %s" % (_pkg_name, rosdebian_dir+'/'))
+    # # Remove the package, entirely
+    # # rm_directory(_path)
 
 
 # Copy the installation and uninstallation task_scripts
